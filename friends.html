@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div class="tabs">
+        <button class="active">Search</button>
+        <button>Requests</button>
+        <button>Friends</button>
+    </div>
+
+    <div class="search-box">
+        <input id="search-u" placeholder="Name or 6-digit ID...">
+        <button onclick="Game.search()">🔍</button>
+    </div>
+
+    <div id="search-results">
+        </div>
+
+    <nav class="bottom-nav">
+        <button onclick="window.location.href='index.html'">🏠 Home</button>
+        <button onclick="window.location.href='friends.html'">👥 Friends</button>
+        <button onclick="window.location.href='dashboard.html'">♟ Play</button>
+        <button onclick="window.location.href='profile.html'">👤 Me</button>
+    </nav>
+</body>
+</html>

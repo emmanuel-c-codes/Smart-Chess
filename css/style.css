@@ -1,0 +1,133 @@
+/* body { background: #0f172a; color: white; font-family: sans-serif; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+.card { background: #1e293b; padding: 20px; border-radius: 8px; width: 300px; text-align: center; }
+input { width: 90%; padding: 10px; margin: 10px 0; }
+button { width: 100%; padding: 10px; background: #4caf50; border: none; color: white; cursor: pointer; }
+#board { display: grid; grid-template-columns: repeat(8, 60px); grid-template-rows: repeat(8, 60px); border: 5px solid #5d4037; }
+.cell { width: 60px; height: 60px; display: flex; align-items: center; justify-content: center; }
+.white-cell { background: #f5f5dc; }
+.green-cell { background: #4caf50; }
+#search-results { padding: 10px; background: #2d3748; margin: 10px; border-radius: 5px; }
+.dashboard-container { display: flex; flex-direction: column; align-items: center; }
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    background: #111827;
+    padding: 15px 0;
+    border-top: 1px solid #333;
+}
+.bottom-nav button {
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+} */
+
+
+/* General Layout */
+body { 
+    background: #0f172a; 
+    color: white; 
+    font-family: sans-serif; 
+    margin: 0; 
+    padding: 0; 
+}
+
+/* Tab Navigation */
+.tabs { 
+    display: flex; 
+    justify-content: space-around; 
+    padding: 15px; 
+    border-bottom: 2px solid #2d3748; 
+}
+.tabs button { 
+    background: none; 
+    border: none; 
+    color: #a0aec0; 
+    cursor: pointer; 
+    font-size: 16px; 
+}
+.tabs button.active { 
+    color: cyan; 
+    border-bottom: 2px solid cyan; 
+}
+
+/* Search Bar */
+.search-box { 
+    padding: 20px; 
+    display: flex; 
+    gap: 10px; 
+}
+.search-box input { 
+    flex: 1; 
+    padding: 12px; 
+    background: #1a202c; 
+    border: 1px solid #333; 
+    color: white; 
+    border-radius: 5px; 
+}
+.search-box button { 
+    padding: 10px 20px; 
+    background: #10b981; 
+    border: none; 
+    border-radius: 5px; 
+    cursor: pointer; 
+}
+
+/* User Card */
+.user-card { 
+    display: flex; 
+    align-items: center; 
+    background: #1e293b; 
+    padding: 15px; 
+    margin: 10px 20px; 
+    border-radius: 8px; 
+}
+.user-card button { 
+    margin-left: auto; 
+    background: cyan; 
+    color: black; 
+    font-weight: bold; 
+    border: none; 
+    padding: 8px 20px; 
+    border-radius: 5px; 
+}
+
+/* Chess Board */
+#board { 
+    display: grid; 
+    grid-template-columns: repeat(8, 50px); 
+    grid-template-rows: repeat(8, 50px); 
+    border: 5px solid #5d4037; 
+    width: fit-content;
+    margin: 20px auto;
+}
+.cell { 
+    width: 50px; 
+    height: 50px; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+}
+.white-cell { background: #f5f5dc; }
+.green-cell { background: #4caf50; }
+
+/* Bottom Nav */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    display: flex;
+    justify-content: space-around;
+    background: #111827;
+    padding: 15px 0;
+    border-top: 1px solid #333;
+}
+.bottom-nav button {
+    background: none;
+    border: none;
+    color: #a0aec0;
+    cursor: pointer;
+}

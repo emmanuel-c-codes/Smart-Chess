@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="css/style.css"></head>
+<body>
+    <div class="card">
+        <h2>Sign Up</h2>
+        <input id="email" type="email" placeholder="Email">
+        <input id="pass" type="password" placeholder="Password">
+        <input id="user" type="text" placeholder="Username">
+        <button onclick="Auth.signup(document.getElementById('email').value, document.getElementById('pass').value, document.getElementById('user').value)">Sign Up</button>
+        <p>Alredy a member? <a href="index.html">Login</a></p>
+    </div>
+    <script type="module" src="js/app.js"></script>
+</body>
+</html>
