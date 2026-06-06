@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
 import { getFirestore, doc, setDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBFSIqcnP5U0CMjQZtIS3jK5VTVcHGLPRw",
@@ -17,34 +17,25 @@ const auth = getAuth(app);
 const game = new Chess();
 let selectedSquare = null;
 
-// Auth Logic
-window.Auth = {
-    signup: async (email, pass, username) => {
-        try {
-            const res = await createUserWithEmailAndPassword(auth, email, pass);
-            await setDoc(doc(db, "users", res.user.uid), { username, email });
-            window.location.href = "dashboard.html";
-        } catch (e) { alert("Error: " + e.message); }
-    },
-    login: async (email, pass) => {
-        try {
-            await signInWithEmailAndPassword(auth, email, pass);
-            window.location.href = "dashboard.html";
-        } catch (e) { alert("Error: " + e.message); }
-    },
-    logout: () => signOut(auth).then(() => window.location.href = "index.html")
-};
+// Auto-Login
+signInAnonymously(auth).then(async (userCredential) => {
+    const uid = userCredential.user.uid;
+    await setDoc(doc(db, "users", uid), { username: "Player_" + uid.substring(0,4) }, { merge: true });
+});
 
-// Game Logic
 window.Game = {
     search: async () => {
         const username = document.getElementById('search-u').value;
         const q = query(collection(db, "users"), where("username", "==", username));
         const res = await getDocs(q);
         const results = document.getElementById('search-results');
+        if (!results) return;
         results.innerHTML = '';
         res.forEach(d => {
-            results.innerHTML = `<button onclick="Game.request('${d.id}')">REQUEST MATCH</button>`;
+            const btn = document.createElement('button');
+            btn.innerText = "REQUEST MATCH: " + d.data().username;
+            btn.onclick = () => window.Game.request(d.id);
+            results.appendChild(btn);
         });
     },
     request: async (oppId) => {
@@ -53,7 +44,6 @@ window.Game = {
     }
 };
 
-// Board Rendering
 window.renderBoard = () => {
     const b = document.getElementById('board');
     if (!b) return;
