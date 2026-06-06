@@ -17,10 +17,18 @@ const auth = getAuth(app);
 const game = new Chess();
 let selectedSquare = null;
 
-// Auto-Login
+// INSTANT AUTHENTICATION
+// This runs as soon as the page loads. It assigns a random ID and saves it to Firestore.
 signInAnonymously(auth).then(async (userCredential) => {
     const uid = userCredential.user.uid;
-    await setDoc(doc(db, "users", uid), { username: "Player_" + uid.substring(0,4) }, { merge: true });
+    const randomUsername = "Player_" + uid.substring(0, 4);
+    await setDoc(doc(db, "users", uid), { 
+        username: randomUsername, 
+        lastSeen: new Date() 
+    }, { merge: true });
+    console.log("Logged in anonymously as:", randomUsername);
+}).catch((error) => {
+    console.error("Auth Error:", error);
 });
 
 window.Game = {
@@ -39,7 +47,13 @@ window.Game = {
         });
     },
     request: async (oppId) => {
-        await setDoc(doc(db, "matches", auth.currentUser.uid), { p1: auth.currentUser.uid, p2: oppId, status: "pending", fen: game.fen() });
+        // The auth.currentUser is now available thanks to anonymous login
+        await setDoc(doc(db, "matches", auth.currentUser.uid), { 
+            p1: auth.currentUser.uid, 
+            p2: oppId, 
+            status: "pending", 
+            fen: game.fen() 
+        });
         alert("Match requested!");
     }
 };
