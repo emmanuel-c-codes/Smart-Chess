@@ -23,6 +23,13 @@
 
     <div id="toast" class="toast"></div>
 
+    <nav class="bottom-nav">
+        <button onclick="window.location.href='index.html'">🏠 Home</button>
+        <button onclick="window.location.href='friends.html'">👥 Friends</button>
+        <button onclick="window.location.href='dashboard.html'">♟ Play</button>
+        <button onclick="window.location.href='profile.html'">👤 Me</button>
+    </nav>
+    
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
         import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
