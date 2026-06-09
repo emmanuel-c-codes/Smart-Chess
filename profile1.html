@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+    <style>
+        body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center;     /* Centers vertically */
+    min-height: 100vh;
+    background-color: #0b1a2f;
+    color: white;
+    font-family: sans-serif;
+}
+.profile-container {
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+}
+.avatar {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: #1a2a3f;
+    border: 3px solid #00d4ff;
+    margin: 0 auto 20px auto; /* Centers the circle */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+}
+.username { font-size: 24px; margin-bottom: 10px; cursor: pointer; }
+.id-container { margin-top: 10px; background: #1a2a3f; padding: 10px; border-radius: 8px; display: inline-block; }
+.toast { position: fixed; bottom: 80px; background: #00d4ff; color: black; padding: 10px 20px; border-radius: 20px; display: none; opacity: 0; transition: opacity 0.5s; }
+.toast.show { display: block; opacity: 1; }
+    </style>
+    <div class="profile-container">
+        <h1>Profile</h1>
+        <div class="avatar" id="avatar" onclick="document.getElementById('file-input').click()">
+            <span id="avatar-text">Upload</span>
+        </div>
+        <input type="file" id="file-input" style="display:none;" accept="image/*">
+        
+        <div class="username" id="username-display">Loading...</div>
+        <input type="text" id="username-input" style="display:none;" onblur="saveUsername()">
+        
+        <div class="id-container">
+            <span>ID: <span id="user-id">Loading...</span></span>
+            <button onclick="copyId()">📋</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-storage.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBFSIqcnP5U0CMjQZtIS3jK5VTVcHGLPRw",
+            authDomain: "client-cc4df.firebaseapp.com",
+            projectId: "client-cc4df",
+            storageBucket: "client-cc4df.firebasestorage.app",
+            messagingSenderId: "600063857476",
+            appId: "1:600063857476:web:9abfe8219251f56e67fd11"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        const storage = getStorage(app);
+
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    document.getElementById('username-display').innerText = data.username;
+                    document.getElementById('user-id').innerText = user.uid.substring(0,6);
+                    if (data.photoURL) {
+                        document.getElementById('avatar').style.backgroundImage = `url(${data.photoURL})`;
+                        document.getElementById('avatar-text').style.display = 'none';
+                    }
+                }
+            }
+        });
+
+        // Image Upload Logic
+        document.getElementById('file-input').onchange = async (e) => {
+            const file = e.target.files[0];
+            const storageRef = ref(storage, 'avatars/' + auth.currentUser.uid);
+            await uploadBytes(storageRef, file);
+            const url = await getDownloadURL(storageRef);
+            await updateDoc(doc(db, "users", auth.currentUser.uid), { photoURL: url });
+            document.getElementById('avatar').style.backgroundImage = `url(${url})`;
+            document.getElementById('avatar-text').style.display = 'none';
+            showToast('SAVED');
+        };
+
+        window.saveUsername = async () => {
+            const input = document.getElementById('username-input');
+            const display = document.getElementById('username-display');
+            if (input.value !== display.innerText) {
+                await updateDoc(doc(db, "users", auth.currentUser.uid), { username: input.value });
+                display.innerText = input.value;
+                showToast('NAME UPDATED');
+            }
+            display.style.display = 'block';
+            input.style.display = 'none';
+        };
+
+        document.getElementById('username-display').onclick = () => {
+            document.getElementById('username-display').style.display = 'none';
+            document.getElementById('username-input').style.display = 'block';
+            document.getElementById('username-input').value = document.getElementById('username-display').innerText;
+        };
+
+        window.copyId = () => {
+            navigator.clipboard.writeText(document.getElementById('user-id').innerText);
+            showToast('ID COPIED');
+        };
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.innerText = text;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+    </script>
+</body>
+</html>

@@ -4,83 +4,172 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+    <div class="profile-container">
+        <h1>Profile</h1>
+        
+        <div class="avatar" id="avatar" onclick="document.getElementById('file-input').click()">
+            <span id="avatar-text">Upload</span>
+        </div>
+        <input type="file" id="file-input" style="display:none;" accept="image/*">
+        
+        <div class="username" id="username-display" onclick="enableEdit()" style="cursor:pointer;">Loading...</div>
+        <input type="text" id="username-input" style="display:none; text-align:center; width:200px;" onblur="saveUsername()">
+        
+        <div class="id-container">
+            <span>ID: <span id="user-id">Loading...</span></span>
+            <button onclick="copyId()" style="background:none; border:none; cursor:pointer;">📋</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast"></div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getFirestore, doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyBFSIqcnP5U0CMjQZtIS3jK5VTVcHGLPRw",
+            authDomain: "client-cc4df.firebaseapp.com",
+            projectId: "client-cc4df",
+            storageBucket: "client-cc4df.firebasestorage.app",
+            messagingSenderId: "600063857476",
+            appId: "1:600063857476:web:9abfe8219251f56e67fd11"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // 1. Initial Load
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    const data = userDoc.data();
+                    document.getElementById('username-display').innerText = data.username || "Set Name";
+                    document.getElementById('user-id').innerText = user.uid.substring(0,6);
+                    
+                    // Display image from Base64 string if it exists
+                    if (data.photoURL) {
+                        const avatar = document.getElementById('avatar');
+                        avatar.style.backgroundImage = `url(${data.photoURL})`;
+                        document.getElementById('avatar-text').style.display = 'none';
+                    }
+                }
+            }
+        });
+
+        // 2. IMAGE UPLOAD (Base64 approach - No Storage required)
+        document.getElementById('file-input').onchange = (e) => {
+            const file = e.target.files[0];
+            const user = auth.currentUser;
+            if (!file || !user) return;
+
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+                const base64String = reader.result;
+                try {
+                    showToast('Saving...');
+                    // Save Base64 string directly to Firestore
+                    await updateDoc(doc(db, "users", user.uid), { photoURL: base64String });
+                    
+                    // Update UI
+                    const avatar = document.getElementById('avatar');
+                    avatar.style.backgroundImage = `url(${base64String})`;
+                    document.getElementById('avatar-text').style.display = 'none';
+                    showToast('SAVED');
+                } catch (error) {
+                    console.error("Error:", error);
+                    showToast('Error saving');
+                }
+            };
+            reader.readAsDataURL(file);
+        };
+
+        // 3. Helper Functions
+        window.enableEdit = () => {
+            document.getElementById('username-display').style.display = 'none';
+            const input = document.getElementById('username-input');
+            input.style.display = 'block';
+            input.value = document.getElementById('username-display').innerText;
+            input.focus();
+        };
+
+        window.saveUsername = async () => {
+            const input = document.getElementById('username-input');
+            const display = document.getElementById('username-display');
+            const user = auth.currentUser;
+            if (user) {
+                await updateDoc(doc(db, "users", user.uid), { username: input.value });
+                display.innerText = input.value;
+                display.style.display = 'block';
+                input.style.display = 'none';
+                showToast('NAME UPDATED');
+            }
+        };
+
+        function showToast(text) {
+            const toast = document.getElementById('toast');
+            toast.innerText = text;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+    </script>
+</body>
+</html>
+
+
+
     <style>
-        body {
-    background-color: #0b1424;
-    color: white;
-    font-family: sans-serif;
+body {
     margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
-    height: 100vh;
+    min-height: 100vh;
+    background-color: #0b1a2f;
+    color: white;
+    font-family: sans-serif;
 }
-
-.profile-card {
-    background-color: #1a2536;
-    padding: 40px;
-    border-radius: 20px;
+.profile-container {
     text-align: center;
-    width: 350px;
+    width: 90%;
+    max-width: 400px;
+    background: #0b1a2f;
 }
-
-.avatar-circle {
-    width: 100px;
-    height: 100px;
-    background-color: #00d1b2;
+.avatar {
+    width: 150px;
+    height: 150px;
     border-radius: 50%;
+    background-color: #1a2a3f;
+    border: 3px solid #00d4ff;
     margin: 0 auto 20px auto;
-}
-
-.name-bar {
-    background-color: #0b1424;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    font-weight: bold;
-}
-
-.id-container {
-    background-color: #0b1424;
-    padding: 10px;
-    border-radius: 5px;
-    margin-bottom: 20px;
-    display: inline-block;
-}
-
-.id-value { color: #00d1b2; }
-
-.bottom-nav {
-    position: fixed;
-    bottom: 0;
-    width: 100%;
-    background-color: #0b1424;
     display: flex;
-    justify-content: space-around;
-    padding: 15px 0;
-    border-top: 1px solid #1a2536;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+.username { 
+    font-size: 24px; 
+    margin-bottom: 20px; 
+    padding: 10px;
+    background: #1a2a3f;
+    border-radius: 8px;
+    cursor: pointer; 
+}
+.id-container { 
+    background: #1a2a3f; 
+    padding: 10px; 
+    border-radius: 8px; 
+    display: inline-block; 
+}
+.toast { 
+    position: fixed; bottom: 30px; background: #00d4ff; color: black; 
+    padding: 10px 20px; border-radius: 20px; display: none; 
 }
     </style>
-    <div class="profile-card">
-        <h2>Profile</h2>
-        
-        <div class="avatar-circle"></div>
-        <div class="name-bar" id="username-display">Loading...</div>
-
-        <div class="id-container">
-            <span class="id-label">ID:</span>
-            <span class="id-value" id="uid-display">...</span>
-        </div>
-        
-        <button onclick="Auth.logout()">Logout</button>
-    </div>
-
-    <nav class="bottom-nav">
-        <button onclick="window.location.href='index.html'">🏠 Home</button>
-        <button onclick="window.location.href='friends.html'">👥 Friends</button>
-        <button onclick="window.location.href='dashboard.html'">♟ Play</button>
-        <button onclick="window.location.href='profile.html'">👤 Me</button>
-    </nav>
-    <script type="module" src="js/app.js"></script>
-</body>
-</html>
