@@ -2,27 +2,50 @@
 <html>
 <head>
     <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* Ensures tab content is hidden unless active */
+        .tab-content { display: none; }
+        
+        /* Default visible tab */
+        #search-box { display: block; }
+    </style>
 </head>
 <body>
     <div class="tabs">
-        <button class="active">Search</button>
-        <button>Requests</button>
-        <button>Friends</button>
+        <button id="btn-search" class="tab-btn active" onclick="showTab('search-box', 'btn-search')">Search</button>
+        <button id="btn-reqs" class="tab-btn" onclick="showTab('requests-container', 'btn-reqs'); Game.loadRequests()">Requests</button>
+        <button id="btn-friends" class="tab-btn" onclick="showTab('friends-container', 'btn-friends'); Game.loadFriends()">Friends</button>
     </div>
 
-    <div class="search-box">
-        <input id="search-u" placeholder="Name or 6-digit ID...">
-        <button onclick="Game.search()">🔍</button>
-    </div>
-
-    <div id="search-results">
+    <div id="search-box" class="tab-content">
+        <div class="search-container">
+            <input id="search-u" placeholder="Player">
+            <button class="search-btn" onclick="Game.search()">🔍</button>
         </div>
+        <div id="search-results"></div>
+    </div>
 
-    <nav class="bottom-nav">
+    <div id="requests-container" class="tab-content"></div>
+    <div id="friends-container" class="tab-content"></div>
+
+        <nav class="bottom-nav">
         <button onclick="window.location.href='index.html'">🏠 Home</button>
         <button onclick="window.location.href='friends.html'">👥 Friends</button>
         <button onclick="window.location.href='dashboard.html'">♟ Play</button>
         <button onclick="window.location.href='profile.html'">👤 Me</button>
     </nav>
+    <script>
+        function showTab(id, btnId) {
+            // Hide all tab contents
+            document.querySelectorAll('.tab-content').forEach(d => d.style.display = 'none');
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            // Show selected tab and set button as active
+            document.getElementById(id).style.display = 'block';
+            document.getElementById(btnId).classList.add('active');
+        }
+    </script>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

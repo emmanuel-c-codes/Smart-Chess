@@ -1,6 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
-import { getFirestore, doc, setDoc, getDocs, collection, query, where } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
-import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
+import { getFirestore, doc, setDoc, getDocs, collection, query, where, deleteDoc } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-firestore.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-auth.js";
 
 const firebaseConfig = {
     apiKey: "AIzaSyBFSIqcnP5U0CMjQZtIS3jK5VTVcHGLPRw",
@@ -14,74 +14,83 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-const game = new Chess();
-let selectedSquare = null;
 
-// INSTANT AUTHENTICATION
-// This runs as soon as the page loads. It assigns a random ID and saves it to Firestore.
-signInAnonymously(auth).then(async (userCredential) => {
-    const uid = userCredential.user.uid;
-    const randomUsername = "Player_" + uid.substring(0, 4);
-    await setDoc(doc(db, "users", uid), { 
-        username: randomUsername, 
-        lastSeen: new Date() 
-    }, { merge: true });
-    console.log("Logged in anonymously as:", randomUsername);
-}).catch((error) => {
-    console.error("Auth Error:", error);
+// Keep track of the current user globally
+let currentUser = null;
+onAuthStateChanged(auth, (user) => {
+    currentUser = user;
 });
 
 window.Game = {
     search: async () => {
-        const username = document.getElementById('search-u').value;
-        const q = query(collection(db, "users"), where("username", "==", username));
-        const res = await getDocs(q);
+        const username = document.getElementById('search-u').value.trim();
         const results = document.getElementById('search-results');
-        if (!results) return;
-        results.innerHTML = '';
-        res.forEach(d => {
-            const btn = document.createElement('button');
-            btn.innerText = "REQUEST MATCH: " + d.data().username;
-            btn.onclick = () => window.Game.request(d.id);
-            results.appendChild(btn);
+        if (!username) return;
+        
+        results.innerHTML = 'Searching...';
+        
+        try {
+            const q = query(collection(db, "users"), where("username", "==", username));
+            const snap = await getDocs(q);
+            
+            results.innerHTML = '';
+            
+            if (snap.empty) {
+                results.innerHTML = '<p style="padding: 20px;">No user found.</p>';
+                return;
+            }
+            
+            snap.forEach(doc => {
+                const data = doc.data();
+                results.innerHTML += `
+                    <div class="user-card">
+                        <div class="user-info">
+                            <div class="avatar"></div>
+                            <div>
+                                <div>${data.username}</div>
+                                <div style="font-size: 12px; color: #888;">ID: ${doc.id.substring(0,6)}</div>
+                            </div>
+                        </div>
+                        <button class="add-btn" onclick="Game.add('${doc.id}')">Add</button>
+                    </div>`;
+            });
+        } catch (error) {
+            console.error("Search failed:", error);
+            results.innerHTML = '<p>Error. Check index in Firebase Console.</p>';
+        }
+    },
+
+    add: async (targetUid) => {
+        if (!currentUser) return alert("Please login first.");
+        await setDoc(doc(db, "users", targetUid, "requests", currentUser.uid), { status: "pending" });
+        alert("Request sent!");
+    },
+
+    loadRequests: async () => {
+        if (!currentUser) return;
+        const snap = await getDocs(collection(db, "users", currentUser.uid, "requests"));
+        const container = document.getElementById('requests-container');
+        container.innerHTML = '<h3>Pending Requests</h3>';
+        snap.forEach(doc => {
+            container.innerHTML += `<div class="user-card">User: ${doc.id} <button class="add-btn" onclick="Game.acceptRequest('${doc.id}')">Accept</button></div>`;
         });
     },
-    request: async (oppId) => {
-        // The auth.currentUser is now available thanks to anonymous login
-        await setDoc(doc(db, "matches", auth.currentUser.uid), { 
-            p1: auth.currentUser.uid, 
-            p2: oppId, 
-            status: "pending", 
-            fen: game.fen() 
+
+    acceptRequest: async (requesterUid) => {
+        if (!currentUser) return;
+        await setDoc(doc(db, "users", currentUser.uid, "friends", requesterUid), { confirmed: true });
+        await setDoc(doc(db, "users", requesterUid, "friends", currentUser.uid), { confirmed: true });
+        await deleteDoc(doc(db, "users", currentUser.uid, "requests", requesterUid));
+        window.Game.loadRequests();
+    },
+
+    loadFriends: async () => {
+        if (!currentUser) return;
+        const snap = await getDocs(collection(db, "users", currentUser.uid, "friends"));
+        const container = document.getElementById('friends-container');
+        container.innerHTML = '<h3>My Friends</h3>';
+        snap.forEach(doc => {
+            container.innerHTML += `<div class="user-card">Friend: ${doc.id} <button class="add-btn">Play</button></div>`;
         });
-        alert("Match requested!");
     }
 };
-
-window.renderBoard = () => {
-    const b = document.getElementById('board');
-    if (!b) return;
-    b.innerHTML = '';
-    const pieces = { w: { p: '♙', r: '♖', n: '♘', b: '♗', q: '♕', k: '♔' },
-                     b: { p: '♟', r: '♜', n: '♞', b: '♝', q: '♛', k: '♚' } };
-    game.board().forEach((row, i) => {
-        row.forEach((sq, j) => {
-            const squareName = String.fromCharCode(97 + j) + (8 - i);
-            const cell = document.createElement('div');
-            cell.className = `cell ${(i+j)%2===0 ? 'white-cell' : 'green-cell'}`;
-            if(sq) {
-                cell.innerText = pieces[sq.color][sq.type];
-                cell.style.fontSize = "30px";
-                cell.onclick = () => {
-                    if (!selectedSquare) selectedSquare = squareName;
-                    else {
-                        try { game.move({ from: selectedSquare, to: squareName, promotion: 'q' }); selectedSquare = null; renderBoard(); } 
-                        catch (e) { selectedSquare = squareName; }
-                    }
-                };
-            }
-            b.appendChild(cell);
-        });
-    });
-};
-document.addEventListener('DOMContentLoaded', renderBoard);

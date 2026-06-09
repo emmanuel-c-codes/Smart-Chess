@@ -4,19 +4,76 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="tabs">
-        <button class="active">Search</button>
-        <button>Requests</button>
-        <button>Friends</button>
-    </div>
+    <style>
+        body {
+    background-color: #0b1424;
+    color: white;
+    font-family: sans-serif;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
 
-    <div class="search-box">
-        <input id="search-u" placeholder="Name or 6-digit ID...">
-        <button onclick="Game.search()">🔍</button>
-    </div>
+.profile-card {
+    background-color: #1a2536;
+    padding: 40px;
+    border-radius: 20px;
+    text-align: center;
+    width: 350px;
+}
 
-    <div id="search-results">
+.avatar-circle {
+    width: 100px;
+    height: 100px;
+    background-color: #00d1b2;
+    border-radius: 50%;
+    margin: 0 auto 20px auto;
+}
+
+.name-bar {
+    background-color: #0b1424;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.id-container {
+    background-color: #0b1424;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    display: inline-block;
+}
+
+.id-value { color: #00d1b2; }
+
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background-color: #0b1424;
+    display: flex;
+    justify-content: space-around;
+    padding: 15px 0;
+    border-top: 1px solid #1a2536;
+}
+    </style>
+    <div class="profile-card">
+        <h2>Profile</h2>
+        
+        <div class="avatar-circle"></div>
+        <div class="name-bar" id="username-display">Loading...</div>
+
+        <div class="id-container">
+            <span class="id-label">ID:</span>
+            <span class="id-value" id="uid-display">...</span>
         </div>
+        
+        <button onclick="Auth.logout()">Logout</button>
+    </div>
 
     <nav class="bottom-nav">
         <button onclick="window.location.href='index.html'">🏠 Home</button>
@@ -24,5 +81,6 @@
         <button onclick="window.location.href='dashboard.html'">♟ Play</button>
         <button onclick="window.location.href='profile.html'">👤 Me</button>
     </nav>
+    <script type="module" src="js/app.js"></script>
 </body>
 </html>

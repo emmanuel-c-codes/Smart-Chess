@@ -1,15 +1,24 @@
 <!DOCTYPE html>
 <html>
-<head><link rel="stylesheet" href="css/style.css"></head>
+<head>
+    <link rel="stylesheet" href="css/style.css">
+</head>
 <body>
-    <div class="card">
+    <div class="auth-container">
         <h2>Sign Up</h2>
-        <input id="email" type="email" placeholder="Email">
-        <input id="pass" type="password" placeholder="Password">
-        <input id="user" type="text" placeholder="Username">
-        <button onclick="Auth.signup(document.getElementById('email').value, document.getElementById('pass').value, document.getElementById('user').value)">Sign Up</button>
-        <p>Alredy a member? <a href="index.html">Login</a></p>
+        <input type="text" id="username" placeholder="Username">
+        <input type="email" id="email" placeholder="Email">
+        <input type="password" id="password" placeholder="Password">
+        <button onclick="Auth.signup(document.getElementById('email').value, document.getElementById('password').value, document.getElementById('username').value)">Register</button>
+        <p>Already have an account? <a href="index.html">Login</a></p>
     </div>
+        <nav class="bottom-nav">
+        <button onclick="window.location.href='index.html'">🏠 Home</button>
+        <button onclick="window.location.href='friends.html'">👥 Friends</button>
+        <button onclick="window.location.href='dashboard.html'">♟ Play</button>
+        <button onclick="window.location.href='profile.html'">👤 Me</button>
+    </nav>
     <script type="module" src="js/app.js"></script>
+    <script type="module" src="js/Auth.js"></script>
 </body>
 </html>
