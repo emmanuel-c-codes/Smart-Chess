@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <link rel="stylesheet" href="css/game.css">
     <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-    
     <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
     <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.3/chess.min.js"></script>
@@ -26,39 +25,38 @@
         <aside class="game-panel">
             <div class="tabs">Moves | Info | Openings</div>
             <div id="move-list"></div>
-            <div class="controls">
-                <button>◀</button> <button>▶</button>
-            </div>
         </aside>
     </div>
 
     <script>
-        // 1. Initialize the game logic
+        // Initialize the game engine and the board
         var game = new Chess();
         
-        // 2. Logic to handle the move and update the list
         function onDrop(source, target) {
+            // Check if the move is legal
             var move = game.move({
                 from: source,
                 to: target,
                 promotion: 'q'
             });
 
-            // If illegal, snap back
+            // If illegal, snap piece back
             if (move === null) return 'snapback';
-
-            // Log the move to your panel
+            
+            // Log move for your sidebar list
             document.getElementById('move-list').innerHTML += `<div>${game.history().length}. ${move.san}</div>`;
         }
 
-        // 3. Initialize the board with drag-and-drop
         var config = {
             draggable: true,
             position: 'start',
             onDrop: onDrop,
             pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
         };
+        
+        // This command creates the interactive board for you
         var board = Chessboard('chessboard', config);
+        
     </script>
 </body>
 </html>
